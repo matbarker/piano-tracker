@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  piano-tracker:
+    image: ghcr.io/matbarker/piano-tracker:latest
+    container_name: piano-tracker
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DB_PATH=/app/data/data.db
+      - NEXT_TELEMETRY_DISABLED=1
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 piano-tracker
+    # The command above checks for updates every 300 seconds (5 minutes)
+    # It will only update the piano-tracker container.

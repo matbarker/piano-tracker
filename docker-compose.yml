@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  piano-tracker:
+    build: .
+    container_name: piano-tracker
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DB_PATH=/app/data/data.db
+      - NEXT_TELEMETRY_DISABLED=1

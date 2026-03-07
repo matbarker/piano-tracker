@@ -1,0 +1,80 @@
+.main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.iconBox {
+  background: var(--accent-gradient);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-glow);
+  color: white;
+}
+
+.title {
+  margin: 0;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.addSection {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+}
+
+.listSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius-lg);
+  color: var(--text-secondary);
+}
