@@ -19,6 +19,6 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 300 piano-tracker
+    command: ["--interval", "300", "piano-tracker"]
     # The command above checks for updates every 300 seconds (5 minutes)
     # It will only update the piano-tracker container.
