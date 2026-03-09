@@ -93,6 +93,7 @@
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.5;
@@ -142,6 +143,28 @@
     background: var(--success);
     border-color: var(--success);
     color: white;
+}
+
+.countBadge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+    color: var(--text-primary);
+}
+
+.urgencyRed {
+    border-left: 4px solid #ef4444;
+}
+
+.urgencyYellow {
+    border-left: 4px solid #f59e0b;
+}
+
+.urgencyGreen {
+    border-left: 4px solid rgba(16, 185, 129, 0.6);
 }
 
 .cardHoverEffect {

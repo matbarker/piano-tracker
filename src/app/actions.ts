@@ -11,6 +11,7 @@ export type Exercise = {
     created_at: string;
     last_practiced_at?: string | null;
     practice_count: number;
+    practice_count_7d: number;
 };
 
 export type PracticeSession = {
@@ -30,11 +31,21 @@ export async function getExercises(): Promise<Exercise[]> {
       e.notes, 
       e.created_at,
       MAX(p.practiced_at) as last_practiced_at,
-      COUNT(p.id) as practice_count
+      COUNT(p.id) as practice_count,
+      COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d
     FROM exercises e
     LEFT JOIN practice_sessions p ON e.id = p.exercise_id
     GROUP BY e.id, e.title, e.notes, e.created_at
-    ORDER BY p.practiced_at ASC NULLS FIRST, e.created_at DESC
+    ORDER BY 
+      CASE 
+        WHEN MAX(p.practiced_at) IS NULL THEN 1
+        WHEN MAX(p.practiced_at) <= datetime('now', '-5 days') THEN 1
+        WHEN MAX(p.practiced_at) <= datetime('now', '-3 days') THEN 2
+        WHEN MAX(p.practiced_at) <= datetime('now', '-1 day') THEN 3
+        ELSE 4
+      END ASC,
+      MAX(p.practiced_at) ASC NULLS FIRST, 
+      e.created_at DESC
   `).all() as Exercise[];
 
     return exercises;
@@ -49,7 +60,8 @@ export async function getExerciseById(id: string): Promise<Exercise | undefined>
       e.notes, 
       e.created_at,
       MAX(p.practiced_at) as last_practiced_at,
-      COUNT(p.id) as practice_count
+      COUNT(p.id) as practice_count,
+      COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d
     FROM exercises e
     LEFT JOIN practice_sessions p ON e.id = p.exercise_id
     WHERE e.id = ?
@@ -70,40 +82,57 @@ export async function getPracticeHistory(exerciseId: string): Promise<PracticeSe
 }
 
 export async function addExercise(title: string, notes: string = '') {
-    const db = getDb();
-    const id = crypto.randomUUID();
+    try {
+        const db = getDb();
+        const id = crypto.randomUUID();
 
-    db.prepare(`
-    INSERT INTO exercises (id, title, notes)
-    VALUES (?, ?, ?)
-  `).run(id, title, notes);
+        db.prepare(`
+        INSERT INTO exercises (id, title, notes)
+        VALUES (?, ?, ?)
+    `).run(id, title, notes);
 
-    revalidatePath('/');
-    return id;
+        revalidatePath('/');
+        return { success: true, id };
+    } catch (error: any) {
+        console.error("Database Error:", error);
+        throw new Error(`Failed to add exercise: ${error?.message || error}`);
+    }
 }
 
 export async function updateExerciseNotes(id: string, notes: string) {
-    const db = getDb();
+    try {
+        const db = getDb();
 
-    db.prepare(`
-    UPDATE exercises
-    SET notes = ?
-    WHERE id = ?
-  `).run(notes, id);
+        db.prepare(`
+        UPDATE exercises
+        SET notes = ?
+        WHERE id = ?
+    `).run(notes, id);
 
-    revalidatePath('/');
-    revalidatePath(`/exercise/${id}`);
+        revalidatePath('/');
+        revalidatePath(`/exercise/${id}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("Database Error:", error);
+        throw new Error(`Failed to update notes: ${error?.message || error}`);
+    }
 }
 
 export async function logPracticeSession(exerciseId: string) {
-    const db = getDb();
-    const id = crypto.randomUUID();
+    try {
+        const db = getDb();
+        const id = crypto.randomUUID();
 
-    db.prepare(`
-    INSERT INTO practice_sessions (id, exercise_id)
-    VALUES (?, ?)
-  `).run(id, exerciseId);
+        db.prepare(`
+        INSERT INTO practice_sessions (id, exercise_id)
+        VALUES (?, ?)
+    `).run(id, exerciseId);
 
-    revalidatePath('/');
-    revalidatePath(`/exercise/${exerciseId}`);
+        revalidatePath('/');
+        revalidatePath(`/exercise/${exerciseId}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("Database Error:", error);
+        throw new Error(`Failed to log practice session: ${error?.message || error}`);
+    }
 }

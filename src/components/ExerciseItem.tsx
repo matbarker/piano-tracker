@@ -27,6 +27,19 @@ export default function ExerciseItem({ exercise }: { exercise: Exercise }) {
         return `Practiced ${diffDays} days ago`;
     };
 
+    const getUrgencyClass = (dateStr: string | null | undefined) => {
+        if (!dateStr) return styles.urgencyRed;
+        
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffDays = (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
+
+        if (diffDays >= 5) return styles.urgencyRed;
+        if (diffDays >= 3) return styles.urgencyYellow;
+        if (diffDays <= 1) return styles.urgencyGreen;
+        return '';
+    };
+
     const handlePractice = async (e: React.MouseEvent) => {
         e.preventDefault(); // Prevent link navigation if button is clicked
         if (isPending) return;
@@ -42,7 +55,7 @@ export default function ExerciseItem({ exercise }: { exercise: Exercise }) {
     };
 
     return (
-        <Link href={`/exercise/${exercise.id}`} className={styles.exerciseCard}>
+        <Link href={`/exercise/${exercise.id}`} className={`${styles.exerciseCard} ${getUrgencyClass(exercise.last_practiced_at)}`}>
             <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>{exercise.title}</h3>
             </div>
@@ -57,6 +70,9 @@ export default function ExerciseItem({ exercise }: { exercise: Exercise }) {
                 <div className={styles.timeInfo}>
                     <Clock size={14} className={styles.timeIcon} />
                     <span className={styles.timeText}>{formatRelativeTime(exercise.last_practiced_at)}</span>
+                    <span className={styles.countBadge}>
+                        {exercise.practice_count_7d}x this week
+                    </span>
                 </div>
 
                 <button
