@@ -9,6 +9,8 @@ export type Exercise = {
     title: string;
     notes: string;
     created_at: string;
+    is_deleted: number;
+    is_archived: number;
     last_practiced_at?: string | null;
     practice_count: number;
     practice_count_7d: number;
@@ -20,7 +22,7 @@ export type PracticeSession = {
     practiced_at: string;
 };
 
-export async function getExercises(): Promise<Exercise[]> {
+export async function getExercises(filter: 'active' | 'archived' = 'active'): Promise<Exercise[]> {
     const db = getDb();
 
     // Fetch exercises and their latest practice session
@@ -30,12 +32,15 @@ export async function getExercises(): Promise<Exercise[]> {
       e.title, 
       e.notes, 
       e.created_at,
+      e.is_deleted,
+      e.is_archived,
       MAX(p.practiced_at) as last_practiced_at,
       COUNT(p.id) as practice_count,
       COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d
     FROM exercises e
     LEFT JOIN practice_sessions p ON e.id = p.exercise_id
-    GROUP BY e.id, e.title, e.notes, e.created_at
+    WHERE e.is_deleted = 0 AND e.is_archived = ?
+    GROUP BY e.id, e.title, e.notes, e.created_at, e.is_deleted, e.is_archived
     ORDER BY 
       CASE 
         WHEN MAX(p.practiced_at) IS NULL THEN 1
@@ -46,7 +51,7 @@ export async function getExercises(): Promise<Exercise[]> {
       END ASC,
       MAX(p.practiced_at) ASC NULLS FIRST, 
       e.created_at DESC
-  `).all() as Exercise[];
+  `).all(filter === 'archived' ? 1 : 0) as Exercise[];
 
     return exercises;
 }
@@ -59,13 +64,15 @@ export async function getExerciseById(id: string): Promise<Exercise | undefined>
       e.title, 
       e.notes, 
       e.created_at,
+      e.is_deleted,
+      e.is_archived,
       MAX(p.practiced_at) as last_practiced_at,
       COUNT(p.id) as practice_count,
       COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d
     FROM exercises e
     LEFT JOIN practice_sessions p ON e.id = p.exercise_id
-    WHERE e.id = ?
-    GROUP BY e.id, e.title, e.notes, e.created_at
+    WHERE e.id = ? AND e.is_deleted = 0
+    GROUP BY e.id, e.title, e.notes, e.created_at, e.is_deleted, e.is_archived
   `).get(id) as Exercise | undefined;
 
     return exercise;
@@ -134,5 +141,40 @@ export async function logPracticeSession(exerciseId: string) {
     } catch (error: any) {
         console.error("Database Error:", error);
         throw new Error(`Failed to log practice session: ${error?.message || error}`);
+    }
+}
+
+export async function deleteExercise(id: string) {
+    try {
+        const db = getDb();
+        db.prepare(`
+            UPDATE exercises
+            SET is_deleted = 1
+            WHERE id = ?
+        `).run(id);
+
+        revalidatePath('/');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Database Error:", error);
+        throw new Error(`Failed to delete exercise: ${error?.message || error}`);
+    }
+}
+
+export async function toggleArchiveExercise(id: string, archive: boolean) {
+    try {
+        const db = getDb();
+        db.prepare(`
+            UPDATE exercises
+            SET is_archived = ?
+            WHERE id = ?
+        `).run(archive ? 1 : 0, id);
+
+        revalidatePath('/');
+        revalidatePath(`/exercise/${id}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("Database Error:", error);
+        throw new Error(`Failed to archive exercise: ${error?.message || error}`);
     }
 }

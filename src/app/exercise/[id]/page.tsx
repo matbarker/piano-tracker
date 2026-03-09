@@ -2,6 +2,7 @@ import { getExerciseById, getPracticeHistory } from '@/app/actions';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import EditNotes from '@/components/EditNotes';
+import ExerciseActions from './ExerciseActions';
 import { notFound } from 'next/navigation';
 import styles from './page.module.css';
 
@@ -41,6 +42,7 @@ export default async function ExerciseDetail(
                 <section className={styles.notesSection}>
                     <h2 className={styles.sectionTitle}>Notes</h2>
                     <EditNotes id={exercise.id} initialNotes={exercise.notes} />
+                    <ExerciseActions id={exercise.id} isArchived={!!exercise.is_archived} />
                 </section>
 
                 <aside className={styles.historySidebar}>

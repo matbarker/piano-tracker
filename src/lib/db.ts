@@ -32,9 +32,21 @@ function initDb(database: Database.Database) {
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
       notes TEXT DEFAULT '',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      is_deleted INTEGER DEFAULT 0,
+      is_archived INTEGER DEFAULT 0
     )
   `);
+
+    // Run simple migration for existing databases
+    try {
+        database.prepare('SELECT is_deleted FROM exercises LIMIT 1').get();
+    } catch {
+        database.exec(`
+            ALTER TABLE exercises ADD COLUMN is_deleted INTEGER DEFAULT 0;
+            ALTER TABLE exercises ADD COLUMN is_archived INTEGER DEFAULT 0;
+        `);
+    }
 
     // Create practice_sessions table
     database.exec(`
