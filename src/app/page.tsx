@@ -19,11 +19,10 @@ export default async function Home() {
             <p className={styles.subtitle}>Log your daily practice sessions</p>
           </div>
         </div>
+        <div className={styles.headerActions}>
+          <AddExercise />
+        </div>
       </header>
-
-      <section className={styles.addSection}>
-        <AddExercise />
-      </section>
 
       <section className={styles.listSection}>
         <h2 className={styles.sectionTitle}>Your Repertoire & Exercises</h2>
