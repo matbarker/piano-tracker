@@ -70,14 +70,21 @@ export default function ExerciseItem({ exercise, mode }: ExerciseItemProps) {
     return (
         <Link 
             href={`/exercise/${exercise.id}`} 
-            className={`${styles.exerciseCard} ${getUrgencyClass(exercise.last_practiced_at)} ${mode === 'practice' ? styles.practiceModeCard : ''}`}
+            className={`${styles.exerciseCard} ${getUrgencyClass(exercise.last_practiced_at)} ${mode === 'practice' ? styles.practiceModeCard : styles.manageModeCard}`}
         >
             <div className={styles.cardHeader}>
                 <div className={styles.titleGroup}>
                     <div className={`${styles.categoryIcon} ${styles[exercise.category]}`}>
                         {categoryIcons[exercise.category as keyof typeof categoryIcons] || <Activity size={18} />}
                     </div>
-                    <h3 className={styles.cardTitle}>{exercise.title}</h3>
+                    <div className={styles.titleAndMeta}>
+                        <h3 className={styles.cardTitle}>{exercise.title}</h3>
+                        {mode === 'manage' && (
+                            <div className={styles.lastPracticedMeta}>
+                                Last practiced: {formatRelativeTime(exercise.last_practiced_at)}
+                            </div>
+                        )}
+                    </div>
                     {exercise.priority === 1 && (
                         <div className={styles.priorityBadge}>
                             <Star size={12} fill="currentColor" />
@@ -86,14 +93,6 @@ export default function ExerciseItem({ exercise, mode }: ExerciseItemProps) {
                     )}
                 </div>
             </div>
-
-            {mode === 'manage' && (
-                <div className={styles.cardBody}>
-                    <p className={styles.notesPreview}>
-                        {exercise.notes ? exercise.notes : 'No notes added yet.'}
-                    </p>
-                </div>
-            )}
 
             <div className={styles.cardFooter}>
                 <div className={styles.statsWrapper}>
@@ -106,10 +105,12 @@ export default function ExerciseItem({ exercise, mode }: ExerciseItemProps) {
                             />
                         ))}
                     </div>
-                    <div className={styles.timeInfo}>
-                        <Clock size={12} />
-                        <span className={styles.timeText}>{formatRelativeTime(exercise.last_practiced_at)}</span>
-                    </div>
+                    {mode !== 'manage' && (
+                        <div className={styles.timeInfo}>
+                            <Clock size={12} />
+                            <span className={styles.timeText}>{formatRelativeTime(exercise.last_practiced_at)}</span>
+                        </div>
+                    )}
                 </div>
 
                 {mode === 'practice' ? (

@@ -6,12 +6,18 @@ import styles from './page.module.css';
 import { Music } from 'lucide-react';
 
 export default async function Home(
-    props: { searchParams: Promise<{ archived?: string; mode?: string }> }
+    props: { searchParams: Promise<{ archived?: string; mode?: string; sort?: string }> }
 ) {
   const searchParams = await props.searchParams;
   const isArchivedView = searchParams?.archived === 'true';
   const mode = (searchParams?.mode as 'practice' | 'manage') || 'practice';
-  const exercises = await getExercises(isArchivedView ? 'archived' : 'active', mode);
+  const sort = (searchParams?.sort as 'title' | 'last_practiced' | 'priority') || 'priority';
+  
+  const exercises = await getExercises(
+    isArchivedView ? 'archived' : 'active', 
+    mode,
+    sort
+  );
 
   return (
     <main className={styles.main}>
@@ -32,12 +38,38 @@ export default async function Home(
 
       <section className={styles.listSection}>
         <div className={styles.listHeader}>
-          <h2 className={styles.sectionTitle}>
-            {mode === 'practice' 
-              ? 'Today\'s Practice Routine' 
-              : isArchivedView ? 'Archived Exercises' : 'Complete Repertoire'
-            }
-          </h2>
+          <div className={styles.headerTitles}>
+            <h2 className={styles.sectionTitle}>
+              {mode === 'practice' 
+                ? 'Today\'s Practice Routine' 
+                : isArchivedView ? 'Archived Exercises' : 'Complete Repertoire'
+              }
+            </h2>
+            {mode === 'manage' && (
+              <div className={styles.sortControls}>
+                <span>Sort by:</span>
+                <Link 
+                  href={`/?mode=manage${isArchivedView ? '&archived=true' : ''}&sort=priority`}
+                  className={`${styles.sortLink} ${sort === 'priority' ? styles.activeSort : ''}`}
+                >
+                  Priority
+                </Link>
+                <Link 
+                  href={`/?mode=manage${isArchivedView ? '&archived=true' : ''}&sort=title`}
+                  className={`${styles.sortLink} ${sort === 'title' ? styles.activeSort : ''}`}
+                >
+                  A-Z
+                </Link>
+                <Link 
+                  href={`/?mode=manage${isArchivedView ? '&archived=true' : ''}&sort=last_practiced`}
+                  className={`${styles.sortLink} ${sort === 'last_practiced' ? styles.activeSort : ''}`}
+                >
+                  Last Practiced
+                </Link>
+              </div>
+            )}
+          </div>
+
           {mode === 'manage' && (
             <div className={styles.tabs}>
               <Link 
@@ -66,7 +98,7 @@ export default async function Home(
             </p>
           </div>
         ) : (
-          <div className={styles.grid}>
+          <div className={mode === 'practice' ? styles.grid : styles.list}>
             {exercises.map((exercise) => (
               <ExerciseItem key={exercise.id} exercise={exercise} mode={mode} />
             ))}

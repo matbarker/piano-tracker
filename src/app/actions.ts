@@ -28,9 +28,34 @@ export type PracticeSession = {
 
 export async function getExercises(
     filter: 'active' | 'archived' = 'active', 
-    mode: 'practice' | 'manage' = 'manage'
+    mode: 'practice' | 'manage' = 'manage',
+    sortBy: 'title' | 'last_practiced' | 'priority' = 'priority'
 ): Promise<Exercise[]> {
     const db = getDb();
+
+    let orderBy = '';
+    switch (sortBy) {
+        case 'title':
+            orderBy = 'e.title ASC';
+            break;
+        case 'last_practiced':
+            orderBy = 'MAX(p.practiced_at) DESC NULLS LAST, e.title ASC';
+            break;
+        case 'priority':
+        default:
+            orderBy = `
+                e.priority DESC,
+                CASE 
+                    WHEN MAX(p.practiced_at) IS NULL THEN 1
+                    WHEN MAX(p.practiced_at) <= datetime('now', '-5 days') THEN 1
+                    WHEN MAX(p.practiced_at) <= datetime('now', '-3 days') THEN 2
+                    WHEN MAX(p.practiced_at) <= datetime('now', '-1 day') THEN 3
+                    ELSE 4
+                END ASC,
+                MAX(p.practiced_at) ASC NULLS FIRST, 
+                e.title ASC`;
+            break;
+    }
 
     // Fetch exercises and their latest practice session
     const exercises = db.prepare(`
@@ -66,17 +91,7 @@ export async function getExercises(
     WHERE e.is_deleted = 0 AND e.is_archived = ?
     GROUP BY e.id, e.title, e.notes, e.created_at, e.is_deleted, e.is_archived, e.category, e.priority
     HAVING ? = 'manage' OR is_practiced_today = 0
-    ORDER BY 
-      e.priority DESC,
-      CASE 
-        WHEN MAX(p.practiced_at) IS NULL THEN 1
-        WHEN MAX(p.practiced_at) <= datetime('now', '-5 days') THEN 1
-        WHEN MAX(p.practiced_at) <= datetime('now', '-3 days') THEN 2
-        WHEN MAX(p.practiced_at) <= datetime('now', '-1 day') THEN 3
-        ELSE 4
-      END ASC,
-      MAX(p.practiced_at) ASC NULLS FIRST, 
-      e.created_at DESC
+    ORDER BY ${orderBy}
   `).all(filter === 'archived' ? 1 : 0, mode) as Exercise[];
 
     return exercises;
