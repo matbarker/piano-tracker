@@ -34,11 +34,22 @@ function initDb(database: Database.Database) {
       notes TEXT DEFAULT '',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       is_deleted INTEGER DEFAULT 0,
-      is_archived INTEGER DEFAULT 0
+      is_archived INTEGER DEFAULT 0,
+      category TEXT DEFAULT 'technique',
+      priority INTEGER DEFAULT 0
     )
   `);
 
     // Run simple migration for existing databases
+    try {
+        database.prepare('SELECT category FROM exercises LIMIT 1').get();
+    } catch {
+        database.exec(`
+            ALTER TABLE exercises ADD COLUMN category TEXT DEFAULT 'technique';
+            ALTER TABLE exercises ADD COLUMN priority INTEGER DEFAULT 0;
+        `);
+    }
+
     try {
         database.prepare('SELECT is_deleted FROM exercises LIMIT 1').get();
     } catch {

@@ -11,9 +11,13 @@ export type Exercise = {
     created_at: string;
     is_deleted: number;
     is_archived: number;
+    category: 'song' | 'scale' | 'technique';
+    priority: number;
     last_practiced_at?: string | null;
     practice_count: number;
     practice_count_7d: number;
+    is_practiced_today: number;
+    activity_map: string; // 7 chars of '0' or '1'
 };
 
 export type PracticeSession = {
@@ -22,7 +26,10 @@ export type PracticeSession = {
     practiced_at: string;
 };
 
-export async function getExercises(filter: 'active' | 'archived' = 'active'): Promise<Exercise[]> {
+export async function getExercises(
+    filter: 'active' | 'archived' = 'active', 
+    mode: 'practice' | 'manage' = 'manage'
+): Promise<Exercise[]> {
     const db = getDb();
 
     // Fetch exercises and their latest practice session
@@ -34,14 +41,33 @@ export async function getExercises(filter: 'active' | 'archived' = 'active'): Pr
       e.created_at,
       e.is_deleted,
       e.is_archived,
+      e.category,
+      e.priority,
       MAX(p.practiced_at) as last_practiced_at,
       COUNT(p.id) as practice_count,
-      COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d
+      COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d,
+      CASE WHEN MAX(p.practiced_at) >= date('now') THEN 1 ELSE 0 END as is_practiced_today,
+      (
+        SELECT group_concat(has_practiced)
+        FROM (
+          SELECT 
+            CASE WHEN EXISTS (
+              SELECT 1 FROM practice_sessions ps 
+              WHERE ps.exercise_id = e.id 
+              AND ps.practiced_at >= date('now', '-' || (6-val) || ' days')
+              AND ps.practiced_at < date('now', '-' || (5-val) || ' days')
+            ) THEN '1' ELSE '0' END as has_practiced
+          FROM (SELECT 0 as val UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6)
+          ORDER BY val DESC
+        )
+      ) as activity_map
     FROM exercises e
     LEFT JOIN practice_sessions p ON e.id = p.exercise_id
     WHERE e.is_deleted = 0 AND e.is_archived = ?
-    GROUP BY e.id, e.title, e.notes, e.created_at, e.is_deleted, e.is_archived
+    GROUP BY e.id, e.title, e.notes, e.created_at, e.is_deleted, e.is_archived, e.category, e.priority
+    HAVING ? = 'manage' OR is_practiced_today = 0
     ORDER BY 
+      e.priority DESC,
       CASE 
         WHEN MAX(p.practiced_at) IS NULL THEN 1
         WHEN MAX(p.practiced_at) <= datetime('now', '-5 days') THEN 1
@@ -51,7 +77,7 @@ export async function getExercises(filter: 'active' | 'archived' = 'active'): Pr
       END ASC,
       MAX(p.practiced_at) ASC NULLS FIRST, 
       e.created_at DESC
-  `).all(filter === 'archived' ? 1 : 0) as Exercise[];
+  `).all(filter === 'archived' ? 1 : 0, mode) as Exercise[];
 
     return exercises;
 }
@@ -66,13 +92,16 @@ export async function getExerciseById(id: string): Promise<Exercise | undefined>
       e.created_at,
       e.is_deleted,
       e.is_archived,
+      e.category,
+      e.priority,
       MAX(p.practiced_at) as last_practiced_at,
       COUNT(p.id) as practice_count,
-      COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d
+      COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d,
+      CASE WHEN MAX(p.practiced_at) >= date('now') THEN 1 ELSE 0 END as is_practiced_today
     FROM exercises e
     LEFT JOIN practice_sessions p ON e.id = p.exercise_id
     WHERE e.id = ? AND e.is_deleted = 0
-    GROUP BY e.id, e.title, e.notes, e.created_at, e.is_deleted, e.is_archived
+    GROUP BY e.id, e.title, e.notes, e.created_at, e.is_deleted, e.is_archived, e.category, e.priority
   `).get(id) as Exercise | undefined;
 
     return exercise;
@@ -88,21 +117,40 @@ export async function getPracticeHistory(exerciseId: string): Promise<PracticeSe
   `).all(exerciseId) as PracticeSession[];
 }
 
-export async function addExercise(title: string, notes: string = '') {
+export async function addExercise(title: string, notes: string = '', category: string = 'technique', priority: number = 0) {
     try {
         const db = getDb();
         const id = crypto.randomUUID();
 
         db.prepare(`
-        INSERT INTO exercises (id, title, notes)
-        VALUES (?, ?, ?)
-    `).run(id, title, notes);
+        INSERT INTO exercises (id, title, notes, category, priority)
+        VALUES (?, ?, ?, ?, ?)
+    `).run(id, title, notes, category, priority);
 
         revalidatePath('/');
         return { success: true, id };
     } catch (error: any) {
         console.error("Database Error:", error);
         throw new Error(`Failed to add exercise: ${error?.message || error}`);
+    }
+}
+
+export async function updateExercise(id: string, data: { title: string; notes: string; category: string; priority: number }) {
+    try {
+        const db = getDb();
+
+        db.prepare(`
+        UPDATE exercises
+        SET title = ?, notes = ?, category = ?, priority = ?
+        WHERE id = ?
+    `).run(data.title, data.notes, data.category, data.priority, id);
+
+        revalidatePath('/');
+        revalidatePath(`/exercise/${id}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("Database Error:", error);
+        throw new Error(`Failed to update exercise: ${error?.message || error}`);
     }
 }
 

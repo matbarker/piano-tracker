@@ -69,18 +69,51 @@
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
+.practiceModeCard {
+    padding: 1.25rem;
+    gap: 0.75rem;
+}
+
 .cardHeader {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
 }
 
-.cardTitle {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin: 0;
-    padding-right: 2rem;
-    /* leaves room for hover arrow */
+.titleGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.categoryIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+}
+
+.categoryIcon.song { color: #f472b6; background: rgba(244, 114, 182, 0.1); }
+.categoryIcon.scale { color: #60a5fa; background: rgba(96, 165, 250, 0.1); }
+.categoryIcon.technique { color: #34d399; background: rgba(52, 211, 153, 0.1); }
+
+.priorityBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 2px 8px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #fbbf24;
+    border-radius: var(--border-radius-full);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
 
 .cardBody {
@@ -106,29 +139,91 @@
     margin-top: 0.5rem;
 }
 
+.statsWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.activityGrid {
+    display: flex;
+    gap: 4px;
+}
+
+.gridSquare {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.activeSquare {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
 .timeInfo {
     display: flex;
     align-items: center;
     gap: 0.35rem;
     color: var(--text-secondary);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
 }
 
 .timeText {
     white-space: nowrap;
 }
 
+.statusBadges {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.statusBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 2px 8px;
+    border-radius: var(--border-radius-full);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.archivedBadge {
+    background: rgba(96, 165, 250, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.deletedBadge {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
 .practiceButton {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-color);
-    padding: 0.4rem 1rem;
+    padding: 0.5rem 1.25rem;
     border-radius: var(--border-radius-full);
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: 0.9rem;
+    font-weight: 600;
     transition: var(--transition-normal);
     position: relative;
     z-index: 10;
-    min-width: 80px;
+}
+
+.practiceModeBtn {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    box-shadow: var(--shadow-glow);
 }
 
 .practiceButton:hover:not(:disabled) {
@@ -210,8 +305,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -271,6 +366,44 @@
     gap: 1.25rem;
 }
 
+.row {
+    display: flex;
+    gap: 1.25rem;
+}
+
+.row > div {
+    flex: 1;
+}
+
+.select {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 0.75rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.priorityToggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    border-radius: var(--border-radius-sm);
+}
+
+.priorityToggle input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
 .formGroup {
     display: flex;
     flex-direction: column;
@@ -299,3 +432,82 @@
 .menuButton:hover {
     background: rgba(255, 255, 255, 0.1);
 }
+
+/* Side Menu */
+.sideMenu {
+    background: var(--bg-surface);
+    border-left: 1px solid var(--border-color);
+    width: 300px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
+    z-index: 1100;
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.menuHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.menuHeader h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.menuNav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.menuLink {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--border-radius-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition-normal);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    width: 100%;
+    text-align: left;
+}
+
+.menuLink:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    transform: translateX(4px);
+}
+
+.activeMenuLink {
+    background: var(--accent-gradient);
+    color: white !important;
+    box-shadow: var(--shadow-glow);
+}
+
+.menuDivider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 0.5rem 0;
+    opacity: 0.5;
+}
