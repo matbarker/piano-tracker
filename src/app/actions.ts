@@ -70,8 +70,8 @@ export async function getExercises(
       e.priority,
       MAX(p.practiced_at) as last_practiced_at,
       COUNT(p.id) as practice_count,
-      COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d,
-      CASE WHEN MAX(p.practiced_at) >= date('now') THEN 1 ELSE 0 END as is_practiced_today,
+      COUNT(CASE WHEN p.practiced_at >= datetime('now', '+8 hours', '-7 days') THEN 1 END) as practice_count_7d,
+      CASE WHEN MAX(p.practiced_at) >= date('now', '+8 hours') THEN 1 ELSE 0 END as is_practiced_today,
       (
         SELECT group_concat(has_practiced)
         FROM (
@@ -79,8 +79,8 @@ export async function getExercises(
             CASE WHEN EXISTS (
               SELECT 1 FROM practice_sessions ps 
               WHERE ps.exercise_id = e.id 
-              AND ps.practiced_at >= date('now', '-' || (6-val) || ' days')
-              AND ps.practiced_at < date('now', '-' || (5-val) || ' days')
+              AND ps.practiced_at >= date('now', '+8 hours', '-' || (6-val) || ' days')
+              AND ps.practiced_at < date('now', '+8 hours', '-' || (5-val) || ' days')
             ) THEN '1' ELSE '0' END as has_practiced
           FROM (SELECT 0 as val UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6)
           ORDER BY val DESC
@@ -111,8 +111,9 @@ export async function getExerciseById(id: string): Promise<Exercise | undefined>
       e.priority,
       MAX(p.practiced_at) as last_practiced_at,
       COUNT(p.id) as practice_count,
-      COUNT(CASE WHEN p.practiced_at >= datetime('now', '-7 days') THEN 1 END) as practice_count_7d,
-      CASE WHEN MAX(p.practiced_at) >= date('now') THEN 1 ELSE 0 END as is_practiced_today
+      COUNT(CASE WHEN p.practiced_at >= datetime('now', '+8 hours', '-7 days') THEN 1 END) as practice_count_7d,
+      CASE WHEN MAX(p.practiced_at) >= date('now', '+8 hours') THEN 1 ELSE 0 END as is_practiced_today,
+      CASE WHEN MAX(p.practiced_at) >= date('now', '+8 hours') THEN 1 ELSE 0 END as is_practiced_today
     FROM exercises e
     LEFT JOIN practice_sessions p ON e.id = p.exercise_id
     WHERE e.id = ? AND e.is_deleted = 0

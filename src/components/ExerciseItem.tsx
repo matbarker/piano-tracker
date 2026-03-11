@@ -24,17 +24,27 @@ export default function ExerciseItem({ exercise, mode }: ExerciseItemProps) {
     // Simple relative time formatter
     const formatRelativeTime = (dateStr: string | null | undefined) => {
         if (!dateStr) return 'Never practiced';
-        const date = new Date(dateStr);
+        // Force UTC interpretation by using ISO format and appending 'Z'
+        const date = new Date(dateStr.replace(' ', 'T') + 'Z');
         const now = new Date();
-        const diffHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+        
+        // Check if it's the same calendar day locally
+        const isSameDay = date.getFullYear() === now.getFullYear() &&
+                          date.getMonth() === now.getMonth() &&
+                          date.getDate() === now.getDate();
+        
+        if (isSameDay) return 'Today';
 
-        if (diffHours < 24) {
-            if (diffHours === 0) return 'Just now';
-            return `${diffHours}h ago`;
-        }
+        // Check if it was yesterday
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const isYesterday = date.getFullYear() === yesterday.getFullYear() &&
+                            date.getMonth() === yesterday.getMonth() &&
+                            date.getDate() === yesterday.getDate();
 
-        const diffDays = Math.floor(diffHours / 24);
-        if (diffDays === 1) return 'Yesterday';
+        if (isYesterday) return 'Yesterday';
+
+        const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
         return `${diffDays}d ago`;
     };
 
