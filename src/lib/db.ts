@@ -16,7 +16,7 @@ export function getDb() {
         fs.mkdirSync(dir, { recursive: true });
     }
 
-    db = new Database(DB_PATH, { verbose: console.log });
+    db = new Database(DB_PATH);
     db.pragma('journal_mode = WAL');
 
     // Initialize schema

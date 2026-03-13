@@ -151,7 +151,6 @@ export async function addExercise(title: string, notes: string = '', category: s
         revalidatePath('/');
         return { success: true, id };
     } catch (error: any) {
-        console.error("Database Error:", error);
         throw new Error(`Failed to add exercise: ${error?.message || error}`);
     }
 }
@@ -170,7 +169,6 @@ export async function updateExercise(id: string, data: { title: string; notes: s
         revalidatePath(`/exercise/${id}`);
         return { success: true };
     } catch (error: any) {
-        console.error("Database Error:", error);
         throw new Error(`Failed to update exercise: ${error?.message || error}`);
     }
 }
@@ -189,7 +187,6 @@ export async function updateExerciseNotes(id: string, notes: string) {
         revalidatePath(`/exercise/${id}`);
         return { success: true };
     } catch (error: any) {
-        console.error("Database Error:", error);
         throw new Error(`Failed to update notes: ${error?.message || error}`);
     }
 }
@@ -208,7 +205,6 @@ export async function logPracticeSession(exerciseId: string) {
         revalidatePath(`/exercise/${exerciseId}`);
         return { success: true };
     } catch (error: any) {
-        console.error("Database Error:", error);
         throw new Error(`Failed to log practice session: ${error?.message || error}`);
     }
 }
@@ -225,7 +221,6 @@ export async function deleteExercise(id: string) {
         revalidatePath('/');
         return { success: true };
     } catch (error: any) {
-        console.error("Database Error:", error);
         throw new Error(`Failed to delete exercise: ${error?.message || error}`);
     }
 }
@@ -243,7 +238,6 @@ export async function toggleArchiveExercise(id: string, archive: boolean) {
         revalidatePath(`/exercise/${id}`);
         return { success: true };
     } catch (error: any) {
-        console.error("Database Error:", error);
         throw new Error(`Failed to archive exercise: ${error?.message || error}`);
     }
 }

@@ -134,7 +134,7 @@ export default function ExerciseItem({ exercise, mode }: ExerciseItemProps) {
                         ) : isPending ? (
                             <span className={styles.spinner}>...</span>
                         ) : (
-                            'I Practiced This'
+                            <><Check size={16} /> Done</>
                         )}
                     </button>
                 ) : (

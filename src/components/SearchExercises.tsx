@@ -13,7 +13,10 @@ export default function SearchExercises() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            const params = new URLSearchParams(searchParams);
+            const currentSearch = searchParams.get('search') || '';
+            if (currentSearch === searchTerm) return; // Prevent infinite loop
+
+            const params = new URLSearchParams(searchParams.toString());
             if (searchTerm) {
                 params.set('search', searchTerm);
             } else {

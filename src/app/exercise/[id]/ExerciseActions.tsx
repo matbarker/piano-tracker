@@ -18,7 +18,6 @@ export default function ExerciseActions({ id, isArchived }: { id: string, isArch
                 await deleteExercise(id);
                 router.push('/');
             } catch (e) {
-                console.error(e);
                 setIsDeleting(false);
             }
         }
@@ -29,7 +28,6 @@ export default function ExerciseActions({ id, isArchived }: { id: string, isArch
         try {
             await toggleArchiveExercise(id, !isArchived);
         } catch (e) {
-            console.error(e);
         } finally {
             setIsArchiving(false);
         }
