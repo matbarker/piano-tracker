@@ -29,7 +29,8 @@ export type PracticeSession = {
 export async function getExercises(
     filter: 'active' | 'archived' = 'active', 
     mode: 'practice' | 'manage' = 'manage',
-    sortBy: 'title' | 'last_practiced' | 'priority' = 'priority'
+    sortBy: 'title' | 'last_practiced' | 'priority' = 'priority',
+    search: string = ''
 ): Promise<Exercise[]> {
     const db = getDb();
 
@@ -47,15 +48,17 @@ export async function getExercises(
                 e.priority DESC,
                 CASE 
                     WHEN MAX(p.practiced_at) IS NULL THEN 1
-                    WHEN MAX(p.practiced_at) <= datetime('now', '-5 days') THEN 1
-                    WHEN MAX(p.practiced_at) <= datetime('now', '-3 days') THEN 2
-                    WHEN MAX(p.practiced_at) <= datetime('now', '-1 day') THEN 3
+                    WHEN MAX(p.practiced_at) <= datetime('now', '+8 hours', '-5 days') THEN 1
+                    WHEN MAX(p.practiced_at) <= datetime('now', '+8 hours', '-3 days') THEN 2
+                    WHEN MAX(p.practiced_at) <= datetime('now', '+8 hours', '-1 day') THEN 3
                     ELSE 4
                 END ASC,
                 MAX(p.practiced_at) ASC NULLS FIRST, 
                 e.title ASC`;
             break;
     }
+
+    const searchPattern = `%${search}%`;
 
     // Fetch exercises and their latest practice session
     const exercises = db.prepare(`
@@ -88,11 +91,13 @@ export async function getExercises(
       ) as activity_map
     FROM exercises e
     LEFT JOIN practice_sessions p ON e.id = p.exercise_id
-    WHERE e.is_deleted = 0 AND e.is_archived = ?
+    WHERE e.is_deleted = 0 
+      AND e.is_archived = ?
+      AND (e.title LIKE ? OR e.notes LIKE ?)
     GROUP BY e.id, e.title, e.notes, e.created_at, e.is_deleted, e.is_archived, e.category, e.priority
     HAVING ? = 'manage' OR is_practiced_today = 0
     ORDER BY ${orderBy}
-  `).all(filter === 'archived' ? 1 : 0, mode) as Exercise[];
+  `).all(filter === 'archived' ? 1 : 0, searchPattern, searchPattern, mode) as Exercise[];
 
     return exercises;
 }

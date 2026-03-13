@@ -4,13 +4,18 @@
   padding: 3rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.searchRow {
+  display: flex;
+  width: 100%;
 }
 
 .titleWrapper {

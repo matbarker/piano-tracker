@@ -1,22 +1,25 @@
 import { getExercises } from '@/app/actions';
 import NavMenu from '@/components/NavMenu';
 import ExerciseItem from '@/components/ExerciseItem';
+import SearchExercises from '@/components/SearchExercises';
 import Link from 'next/link';
 import styles from './page.module.css';
 import { Music } from 'lucide-react';
 
 export default async function Home(
-    props: { searchParams: Promise<{ archived?: string; mode?: string; sort?: string }> }
+    props: { searchParams: Promise<{ archived?: string; mode?: string; sort?: string; search?: string }> }
 ) {
   const searchParams = await props.searchParams;
   const isArchivedView = searchParams?.archived === 'true';
   const mode = (searchParams?.mode as 'practice' | 'manage') || 'practice';
   const sort = (searchParams?.sort as 'title' | 'last_practiced' | 'priority') || 'priority';
+  const search = searchParams?.search || '';
   
   const exercises = await getExercises(
     isArchivedView ? 'archived' : 'active', 
     mode,
-    sort
+    sort,
+    search
   );
 
   return (
@@ -35,6 +38,10 @@ export default async function Home(
           <NavMenu currentMode={mode} isArchivedView={isArchivedView} />
         </div>
       </header>
+
+      <div className={styles.searchRow}>
+        <SearchExercises />
+      </div>
 
       <section className={styles.listSection}>
         <div className={styles.listHeader}>
