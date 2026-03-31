@@ -44,16 +44,25 @@ export default function ExerciseItem({ exercise, mode }: ExerciseItemProps) {
 
         if (isYesterday) return 'Yesterday';
 
-        const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        // Calculate calendar day difference
+        const todayAtMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dateAtMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const diffDays = Math.round((todayAtMidnight.getTime() - dateAtMidnight.getTime()) / (1000 * 60 * 60 * 24));
+        
         return `${diffDays}d ago`;
     };
 
     const getUrgencyClass = (dateStr: string | null | undefined) => {
         if (!dateStr) return styles.urgencyRed;
         
-        const date = new Date(dateStr);
+        // Force UTC interpretation to match formatRelativeTime
+        const date = new Date(dateStr.replace(' ', 'T') + 'Z');
         const now = new Date();
-        const diffDays = (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
+        
+        // Calculate calendar day difference
+        const todayAtMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dateAtMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const diffDays = Math.round((todayAtMidnight.getTime() - dateAtMidnight.getTime()) / (1000 * 60 * 60 * 24));
 
         if (diffDays >= 5) return styles.urgencyRed;
         if (diffDays >= 3) return styles.urgencyYellow;
