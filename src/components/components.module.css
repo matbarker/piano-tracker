@@ -132,6 +132,12 @@
 .categoryIcon.scale { color: #60a5fa; background: rgba(96, 165, 250, 0.1); }
 .categoryIcon.technique { color: #34d399; background: rgba(52, 211, 153, 0.1); }
 
+.badgesWrapper {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 .priorityBadge {
     display: flex;
     align-items: center;
@@ -139,6 +145,20 @@
     padding: 2px 8px;
     background: rgba(245, 158, 11, 0.1);
     color: #fbbf24;
+    border-radius: var(--border-radius-full);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.staleBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 2px 8px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
     border-radius: var(--border-radius-full);
     font-size: 0.7rem;
     font-weight: 700;

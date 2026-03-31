@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Exercise, logPracticeSession } from '@/app/actions';
-import { Check, Clock, ChevronRight, Music, Hash, Activity, Star, Archive, Trash2 } from 'lucide-react';
+import { Check, Clock, ChevronRight, Music, Hash, Activity, Star, Archive, Trash2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import styles from './components.module.css';
 
@@ -86,6 +86,16 @@ export default function ExerciseItem({ exercise, mode }: ExerciseItemProps) {
 
     const activityData = exercise.activity_map ? exercise.activity_map.split(',') : ['0','0','0','0','0','0','0'];
 
+    const isStale = (() => {
+        if (!exercise.last_practiced_at) return true;
+        const date = new Date(exercise.last_practiced_at.replace(' ', 'T') + 'Z');
+        const now = new Date();
+        const todayAtMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dateAtMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const diffDays = Math.round((todayAtMidnight.getTime() - dateAtMidnight.getTime()) / (1000 * 60 * 60 * 24));
+        return diffDays >= 6;
+    })();
+
     return (
         <Link 
             href={`/exercise/${exercise.id}`} 
@@ -104,12 +114,20 @@ export default function ExerciseItem({ exercise, mode }: ExerciseItemProps) {
                             </div>
                         )}
                     </div>
-                    {exercise.priority === 1 && (
-                        <div className={styles.priorityBadge}>
-                            <Star size={12} fill="currentColor" />
-                            <span>High</span>
-                        </div>
-                    )}
+                    <div className={styles.badgesWrapper}>
+                        {isStale && (
+                            <div className={styles.staleBadge}>
+                                <AlertCircle size={12} fill="currentColor" opacity={0.8}/>
+                                <span>Stale</span>
+                            </div>
+                        )}
+                        {exercise.priority === 1 && (
+                            <div className={styles.priorityBadge}>
+                                <Star size={12} fill="currentColor" />
+                                <span>High</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

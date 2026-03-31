@@ -45,9 +45,13 @@ export async function getExercises(
         case 'priority':
         default:
             orderBy = `
-                e.priority DESC,
                 CASE 
                     WHEN MAX(p.practiced_at) IS NULL THEN 1
+                    WHEN MAX(p.practiced_at) <= datetime('now', '+8 hours', '-6 days') THEN 1
+                    ELSE 2
+                END ASC,
+                e.priority DESC,
+                CASE 
                     WHEN MAX(p.practiced_at) <= datetime('now', '+8 hours', '-5 days') THEN 1
                     WHEN MAX(p.practiced_at) <= datetime('now', '+8 hours', '-3 days') THEN 2
                     WHEN MAX(p.practiced_at) <= datetime('now', '+8 hours', '-1 day') THEN 3
