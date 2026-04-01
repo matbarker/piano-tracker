@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import EditExercise from '@/components/EditExercise';
 import ExerciseActions from './ExerciseActions';
+import PracticeHistoryList from '@/components/PracticeHistoryList';
 import { notFound } from 'next/navigation';
 import styles from './page.module.css';
 
@@ -29,7 +30,7 @@ export default async function ExerciseDetail(
                 <div className={styles.meta}>
                     <div className={styles.metaItem}>
                         <Calendar size={16} />
-                        <span>Added {new Date(exercise.created_at).toLocaleDateString()}</span>
+                        <span>Added {new Date(exercise.created_at.replace(' ', 'T') + 'Z').toLocaleDateString()}</span>
                     </div>
                     <div className={styles.metaItem}>
                         <Clock size={16} />
@@ -48,34 +49,7 @@ export default async function ExerciseDetail(
                 <aside className={styles.historySidebar}>
                     <h2 className={styles.sectionTitle}>Practice History</h2>
 
-                    {history.length === 0 ? (
-                        <div className={styles.emptyHistory}>
-                            <p>You haven't practiced this yet.</p>
-                        </div>
-                    ) : (
-                        <ul className={styles.historyList}>
-                            {history.map((session) => (
-                                <li key={session.id} className={styles.historyItem}>
-                                    <div className={styles.historyMarker}></div>
-                                    <div className={styles.historyData}>
-                                        <p className={styles.historyDate}>
-                                            {new Date(session.practiced_at).toLocaleDateString(undefined, {
-                                                weekday: 'short',
-                                                month: 'short',
-                                                day: 'numeric'
-                                            })}
-                                        </p>
-                                        <p className={styles.historyTime}>
-                                            {new Date(session.practiced_at).toLocaleTimeString(undefined, {
-                                                hour: 'numeric',
-                                                minute: '2-digit'
-                                            })}
-                                        </p>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                    <PracticeHistoryList history={history} />
                 </aside>
             </div>
         </main>
